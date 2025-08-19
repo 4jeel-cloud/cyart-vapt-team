@@ -1,0 +1,14 @@
+# Nmap 7.95 scan initiated Tue Aug 19 16:20:16 2025 as: /usr/lib/nmap/nmap --privileged -Pn -sV -sC --script vuln -oN metasploitable_scan.txt 192.168.56.102
+Pre-scan script results:
+| broadcast-avahi-dos: 
+|   Discovered hosts:
+|     224.0.0.251
+|   After NULL UDP avahi packet DoS (CVE-2011-1002).
+|_  Hosts are all up (not vulnerable).
+Nmap scan report for 192.168.56.102
+Host is up.
+All 1000 scanned ports on 192.168.56.102 are in ignored states.
+Not shown: 1000 filtered tcp ports (no-response)
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+# Nmap done at Tue Aug 19 16:24:16 2025 -- 1 IP address (1 host up) scanned in 239.78 seconds
