@@ -1,1 +1,149 @@
 
+Week 02 – VAPT Workflow
+
+This document summarizes the **Day 01 → Day 05 VAPT cycle** conducted on the Metasploitable 2 target (192.168.56.102) following PTES guidelines.
+
+---
+
+Day 01 – Vulnerability Scanning
+
+Goal: Discover vulnerabilities and prioritize risks.
+Tools: Nmap, OpenVAS (failed), manual CVE research
+
+Steps:
+
+1. Perform host discovery and service detection:
+
+   ```bash
+   nmap -sV 192.168.56.102
+   ```
+2. Document open services & versions.
+3. Attempt OpenVAS scan (failed due to sync issues).
+4. Research CVEs manually (NVD, Exploit-DB).
+5. Prioritize using **CVSS v3.1**.
+
+Findings:
+
+* VSFTPD 2.3.4 Backdoor (CVE-2011-2523) – CVSS 9.8
+* Samba EternalBlue (CVE-2017-0143) – CVSS 10.0
+* UnrealIRCd Backdoor (CVE-2010-2075) – CVSS 9.8
+* DistCC Unauthorized Access (CVE-2004-2687) – CVSS 9.8
+* PHP-CGI Argument Injection (CVE-2012-1823) – CVSS 9.8
+
+---
+
+Day 02 – Reconnaissance
+
+Goal: Gather intelligence & enumerate exposed attack surfaces.
+Tools: Nmap, Nikto, Wappalyzer, Sublist3r, Maltego
+
+Steps:
+
+1. Scan ports & services (Nmap).
+2. Enumerate technologies (Wappalyzer).
+3. Test for web flaws (Nikto).
+4. Check for subdomains (Sublist3r).
+5. Document results.
+
+Findings:
+
+* Apache 2.2.8 (outdated, multiple CVEs).
+* PHP 5.2.4 (deprecated).
+* WebDAV enabled (high risk).
+* SSL/TLS missing (port 443 filtered).
+* Exposed phpinfo.php, phpMyAdmin, directory listing.
+
+---
+
+Day 03 – Exploitation
+
+Goal: Exploit discovered vulnerabilities.
+Tools: Metasploit, sqlmap, Burp Suite, netcat
+
+Exploits Performed:
+
+* ✅ VSFTPD 2.3.4 backdoor → Root shell on port 6200
+* ✅ SQL Injection in DVWA → Dumped users table & cracked hashes
+* ✅ Tomcat Manager Deploy exploit → Reverse shell
+* ✅ UnrealIRCd backdoor → Reverse shell
+* ✅ DistCC RCE → Reverse shell
+
+Log Example:
+
+| Time  | Tool       | Vulnerability      | Status    | Notes              |
+| ----- | ---------- | ------------------ | --------- | ------------------ |
+| 14:30 | Metasploit | VSFTPD Backdoor    | ✅ Success | Root shell gained  |
+| 23:10 | sqlmap     | DVWA SQL Injection | ✅ Success | Users table dumped |
+| 23:45 | Metasploit | Tomcat RCE         | ✅ Success | Reverse shell      |
+
+---
+
+Day 04 – Post-Exploitation
+
+Goal: Escalate privileges, collect evidence, assess risks.
+Tools: Meterpreter, Linux commands, sha256sum
+
+Steps:
+
+1. Upgrade shell to interactive bash:
+
+   ```bash
+   python -c 'import pty; pty.spawn("/bin/bash")'
+   ```
+2. Enumerate system info (uname -a, ifconfig, ps aux).
+3. Analyze exposed services (25+ detected).
+4. Dump sensitive files (/etc/passwd, /etc/shadow).
+5. Hash evidence with sha256sum.
+
+Findings:
+
+* Full root-level control achieved.
+* Outdated kernel (2.6.24, 2008).
+* 25+ services externally exposed (Apache, Samba, MySQL, Tomcat).
+* Critical risk: entire system compromised.
+
+---
+
+Day 05 – Capstone (Full VAPT Cycle)
+
+Goal: Conduct an end-to-end penetration test & report.
+Tools: Kali Linux, sqlmap, Burp Suite, OpenVAS
+
+Steps:
+
+1. Access DVWA & login (admin/password).
+2. Set security level = Low.
+3. Confirm SQL Injection via `'` payload.
+4. Automate exploitation with sqlmap:
+
+   ```bash
+   sqlmap -u "http://192.168.56.102/dvwa/vulnerabilities/sqli/?id=1" \
+   --cookie="security=low; PHPSESSID=abc123" --batch --dbs
+   ```
+5. Extract & crack credentials.
+6. Document in PTES format.
+
+Results:
+
+* SQL Injection → Full DB dump (all users).
+* Reflected XSS, CSRF, and Command Injection were also identified.
+* 5/5 user passwords cracked.
+* Full database compromise confirmed.
+
+
+## 📌 Final Deliverables
+
+* Reports (PDFs per day)
+* Screenshots (tool outputs, evidence)
+* Excel (CVSS scoring & prioritization)
+* libre` office (PTES reports & summaries)
+
+
+✅ End-to-End Flow Summary
+
+1. Day 01 → Identified vulnerabilities (Nmap, CVEs).
+2. Day 02 → Reconnaissance (Nmap, Nikto, Wappalyzer).
+3. Day 03 → Exploited multiple services (Metasploit, sqlmap).
+4. Day 04 → Root control & evidence collection.
+5. Day 05 → Full PTES-style report with remediation.
+
